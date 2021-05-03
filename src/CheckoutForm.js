@@ -34,6 +34,7 @@ const CheckoutForm = () => {
     const elements = useElements();
 
     const handleSubmit = async e => {
+        console.log(elements);
         e.preventDefault();
         const {error, paymentMethod} = await stripe.createPaymentMethod({
             type: 'card',
@@ -43,20 +44,21 @@ const CheckoutForm = () => {
             console.log(error);
         } else {
             console.log(paymentMethod);
+            elements.getElement(CardNumberElement).clear();
             const { id } = paymentMethod;
             // Other important data
             // const { brand, last4, exp_month, exp_year } = paymentMethod.billing_details;
-            const data = {
-              stripeToken: id
-            }
-            const result = await fetch(`${API}getStripeToken`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(data),
-            });
-            console.log(result);
+            // const data = {
+            //   stripeToken: id
+            // }
+            // const result = await fetch(`${API}getStripeToken`, {
+            //   method: 'POST',
+            //   headers: {
+            //     'Content-Type': 'application/json'
+            //   },
+            //   body: JSON.stringify(data),
+            // });
+            // console.log(result);
         }
     };
 
