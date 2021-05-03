@@ -1,36 +1,32 @@
 import React from 'react';
 import {
-    CardElement,
-    useStripe,
-    useElements,
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement
 } from '@stripe/react-stripe-js';
+import { API } from './config';
 
-const CARD_ELEMENT_OPTIONS = {
-    iconStyle: "solid",
-    hidePostalCode: true,
-    style: {
+const CARD_OPTIONS = {
+  style: {
       base: {
-        iconColor: "rgb(240, 57, 122)",
-        color: "rgb(240, 57, 122)",
-        fontSize: "16px",
-        fontFamily: '"Open Sans", sans-serif',
-        fontSmoothing: "antialiased",
-        "::placeholder": {
-          color: "#CFD7DF"
-        }
+          iconColor: "#ccc",
+          color: "#ccc",
+          fontWeight: 500,
+          fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
+          fontSize: "16px",
+          fontSmoothing: "antialiased",
+          "::placeholder": {
+              color: "#a2a2a2"
+          }
       },
       invalid: {
-        color: "#e5424d",
-        ":focus": {
-          color: "#303238"
-        }
+          iconColor: "#ffc7ee",
+          color: "#ffc7ee"
       }
-    }
-  };
-
-function CardSection() {
-    return <CardElement options={CARD_ELEMENT_OPTIONS} />;
-}
+  }
+};
 
 const CheckoutForm = () => {
 
@@ -41,12 +37,26 @@ const CheckoutForm = () => {
         e.preventDefault();
         const {error, paymentMethod} = await stripe.createPaymentMethod({
             type: 'card',
-            card: elements.getElement(CardElement),
+            card: elements.getElement(CardNumberElement),
         });
         if(error){
             console.log(error);
         } else {
             console.log(paymentMethod);
+            const { id } = paymentMethod;
+            // Other important data
+            // const { brand, last4, exp_month, exp_year } = paymentMethod.billing_details;
+            const data = {
+              stripeToken: id
+            }
+            const result = await fetch(`${API}getStripeToken`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data),
+            });
+            console.log(result);
         }
     };
 
@@ -54,10 +64,20 @@ const CheckoutForm = () => {
         <form 
             onSubmit={handleSubmit}
         >
-            <CardSection />
+          <div className="container">
+            <fieldset className="FormGroup w-100">
+                <CardNumberElement options={CARD_OPTIONS}/>
+            </fieldset>
+            <fieldset className="FormGroup w-50">
+                <CardExpiryElement options={CARD_OPTIONS}/>
+            </fieldset>
+            <fieldset className="FormGroup w-50">
+                <CardCvcElement options={CARD_OPTIONS}/>
+            </fieldset>
             <button type="submit" disabled={!stripe}>
                 Pay
             </button>
+          </div>
         </form>
     )
 }
